@@ -1,34 +1,68 @@
 import pandas as pd
 import numpy as np
+from parser import find_fios
+# find_pass_data
 
+def make_for_bus(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    iterate over given dataframe and split fio cell into few people.
+    """
+    pre_final = df.copy()
+    rows = []
 
+    pre_final.reset_index(inplace=True)
+    for ii, row in pre_final.iterrows():
+        # Получаем списки ФИО и серий  
+        fio_list = find_fios(row.fio)
+        # seria_list = find_pass_data(row.pass_seria)
 
-def make_for_bus(df, type_):
-    if type_ not in ['forward', 'backward']:
-        raise Exception #('Key error') 
-        # type = 'forward' 
-    fio_pass = [ 'fio_transfer', 'passport' ] 
-    # n_forward int
-    sub_column = ['phone_number'] + [v + '_' + type_  for v in fio_pass]
-    # pass_seria fio 
-    pre_final = df[sub_column]
+        # Приводим к одной длине
+        if len(fio_list) != len(row.pass_seria): 
+            print(f"NotEqualLen: {fio_list} & {row.pass_seria}")
+        
+        count = min(len(fio_list), len(row.pass_seria))
+
+        for i in range(count):
+            rows.append({
+                'fio': fio_list[i][0],
+                'phone_number': row.phone_number,
+                'seria_number': row.pass_seria[i],
+                'uki': ii,
+                'n': row.n
+            })
+
+    # Создаём итоговый DataFrame
+    result = pd.DataFrame(rows)
+    result.sort_values(by='fio', inplace=True)
+    result.reset_index(drop=True, inplace=True)
+    return result
     
-    # check here 
-    
-    
-    final_one = pd.merge(pd.merge(pre_final.pass_seria.apply(pd.Series).iloc[:, :1], 
-         pre_final.fio.apply(pd.Series).iloc[:, :1] ,
-         left_index=True, 
-         right_index=True), 
-         pre_final.phone_number, 
-         left_index=True, 
-         right_index=True)
 
-    ttt = final_one.rename(columns={'0_x': 'seria_number', '0_y': 'fio'})
-    ttt.sort_values(by='fio', inplace=True)
-    ttt.reset_index(inplace=True)
-    ttt.drop(columns='index', inplace=True)
-    return ttt[['fio', 'phone_number', 'seria_number']]  
+# def make_for_bus(df, type_):
+#     if type_ not in ['forward', 'backward']:
+#         raise Exception #('Key error') 
+#         # type = 'forward' 
+#     fio_pass = [ 'fio_transfer', 'passport' ] 
+#     # n_forward int
+#     sub_column = ['phone_number'] + [v + '_' + type_  for v in fio_pass]
+#     # pass_seria fio 
+#     pre_final = df[sub_column]
+    
+#     # check here 
+
+#     final_one = pd.merge(pd.merge(pre_final.pass_seria.apply(pd.Series).iloc[:, :1], 
+#          pre_final.fio.apply(pd.Series).iloc[:, :1] ,
+#          left_index=True, 
+#          right_index=True), 
+#          pre_final.phone_number, 
+#          left_index=True, 
+#          right_index=True)
+
+#     ttt = final_one.rename(columns={'0_x': 'seria_number', '0_y': 'fio'})
+#     ttt.sort_values(by='fio', inplace=True)
+#     ttt.reset_index(inplace=True)
+#     ttt.drop(columns='index', inplace=True)
+#     return ttt[['fio', 'phone_number', 'seria_number']]  
 
 
 
