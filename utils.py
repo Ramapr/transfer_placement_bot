@@ -19,10 +19,9 @@ def make_for_bus(df: pd.DataFrame) -> pd.DataFrame:
         # Приводим к одной длине
         if len(fio_list) != len(row.pass_seria): 
             print(f"NotEqualLen: {fio_list} & {row.pass_seria}")
+        # count = min(len(fio_list), len(row.pass_seria))
         
-        count = min(len(fio_list), len(row.pass_seria))
-
-        for i in range(count):
+        for i in range(len(fio_list)):
             rows.append({
                 'fio': fio_list[i][0],
                 'phone_number': row.phone_number,
